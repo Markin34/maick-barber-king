@@ -11,7 +11,9 @@ export const negocio = {
   // Dirección y ubicación tal como figuran en la ficha "Barber King Maick" de Google Maps.
   direccion: 'Av. Maximiliano Kolbe y Bolívar',
   ciudad: 'Cochabamba',
-  mapsUrl: 'https://www.google.com/maps/place/Barber+King+Maick/@-17.3780464,-66.1082246,17z',
+  // Link por ID de la ficha (cid): abre "Barber King Maick" con el pin, en la web y en la app.
+  // El link por nombre (/maps/place/Nombre/@lat,lng) a veces abría el mapa sin marcar el local.
+  mapsUrl: 'https://maps.google.com/?cid=13497774409510950302',
   // Redes: sin link no aparecen en el pie. Ej.: instagram: 'https://www.instagram.com/maickbarberking/',
   zonaHoraria: 'America/La_Paz',
   horario: {
