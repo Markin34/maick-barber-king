@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base titulo="Página no encontrada">
+  <section class="contenedor flex flex-col items-start gap-5 py-24">
+    <p class="eyebrow">Error 404</p>
+    <h1 class="titulo-seccion">Esta página no existe</h1>
+    <p class="text-gris">
+      Puede que el link esté mal escrito. Desde aquí puedes reservar o volver al inicio.
+    </p>
+    <div class="flex flex-wrap gap-3">
+      <a href="/reservar" class="btn-principal">
+        Reservar cita
+      </a>
+      <a href="/" class="btn-secundario">
+        Ir al inicio
+      </a>
+    </div>
+  </section>
+</Base>

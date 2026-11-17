@@ -1,0 +1,13 @@
+# Lo que no se sube a Vercel. Las claves van en Vercel → Settings → Environment Variables.
+.env
+.env.*
+!.env.example
+node_modules
+dist
+dist-e2e
+.astro
+playwright-report
+test-results
+docs
+respaldos
+scripts

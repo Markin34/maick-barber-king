@@ -1,0 +1,34 @@
+---
+import { catalogo } from '../data';
+import { NOMBRE_DIA, type Dia } from '../data/schema';
+import { hora12 } from '../lib/formato';
+
+// Semana empezando en lunes, como se acostumbra en Bolivia.
+const orden: Dia[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+const { horario } = catalogo.negocio;
+---
+
+<dl class="divide-borde divide-y text-sm">
+  {orden.map((dia) => {
+    const h = horario[dia];
+    return (
+      <div class="flex items-baseline justify-between gap-4 py-2.5" data-dia={dia}>
+        <dt class="font-semibold">{NOMBRE_DIA[dia]}</dt>
+        <dd class="text-gris text-right tabular-nums">
+          {h ? (
+            <>
+              {hora12(h.abre)} – {hora12(h.cierra)}
+              {h.descanso && (
+                <span class="block text-xs">
+                  Descanso {hora12(h.descanso.desde)} – {hora12(h.descanso.hasta)}
+                </span>
+              )}
+            </>
+          ) : (
+            'Cerrado'
+          )}
+        </dd>
+      </div>
+    );
+  })}
+</dl>

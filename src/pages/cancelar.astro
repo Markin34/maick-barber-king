@@ -1,0 +1,144 @@
+---
+import Base from '../layouts/Base.astro';
+import { catalogo } from '../data';
+import { configSupabase } from '../lib/config';
+import { linkWhatsApp } from '../lib/whatsapp';
+
+const { negocio } = catalogo;
+const enLinea = Boolean(configSupabase());
+const whatsapp = linkWhatsApp(negocio.whatsapp, `Hola ${negocio.nombre}, quiero cancelar mi reserva.`);
+const CAMPO =
+  'bg-panel border-borde focus:border-laton min-h-12 rounded-xl border px-4 text-base outline-none transition-colors';
+---
+
+<Base
+  titulo="Cancelar reserva"
+  descripcion={`Cancela tu reserva en ${negocio.nombre} con tu código.`}
+  noIndex
+>
+  <section class="contenedor max-w-md py-8 sm:py-12">
+    <h1 class="font-display text-3xl leading-tight sm:text-4xl">Cancelar tu reserva</h1>
+    <p class="text-gris mt-2">
+      Escribe el código que te dimos al reservar y tu nombre tal como lo pusiste. La hora queda libre
+      para otro cliente.
+    </p>
+
+    {
+      enLinea ? (
+        <form id="form-cancelar" class="mt-6 flex flex-col gap-4" novalidate>
+          <div class="flex flex-col gap-2">
+            <label for="codigo" class="text-sm font-semibold">
+              Código de la reserva
+            </label>
+            <input
+              id="codigo"
+              name="codigo"
+              type="text"
+              required
+              maxlength="6"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="Ej.: A1B2C3"
+              class={`${CAMPO} font-mono tracking-widest uppercase`}
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="cliente" class="text-sm font-semibold">
+              Tu nombre
+            </label>
+            <input
+              id="cliente"
+              name="cliente"
+              type="text"
+              required
+              maxlength="60"
+              autocomplete="name"
+              placeholder="Ej.: Carlos Pérez"
+              class={CAMPO}
+            />
+          </div>
+          <p id="mensaje" role="status" aria-live="polite" class="hidden rounded-xl border p-4 text-sm" />
+          <button id="boton" type="submit" class="btn-principal disabled:cursor-wait disabled:opacity-70">
+            Cancelar mi reserva
+          </button>
+        </form>
+      ) : null
+    }
+
+    <p class="text-gris mt-6 text-sm">
+      ¿No tienes el código o falta poco para tu cita?{' '}
+      <a href={whatsapp} target="_blank" rel="noopener noreferrer" class="text-texto font-semibold underline">
+        Escríbenos por WhatsApp
+      </a>
+      .
+    </p>
+  </section>
+</Base>
+
+<script>
+  import { configSupabase } from '../lib/config';
+  import { cancelarReserva, type ResultadoCancelacion } from '../lib/reservas-api';
+
+  const MENSAJES: Record<ResultadoCancelacion | 'ERROR' | 'FALTAN_DATOS', [string, boolean]> = {
+    CANCELADA: ['Listo, tu reserva quedó cancelada y la hora quedó libre. ¡Te esperamos otro día!', true],
+    NO_ENCONTRADA: [
+      'No encontramos una reserva próxima con ese código y ese nombre. Revisa que estén bien escritos.',
+      false,
+    ],
+    MUY_TARDE: ['Falta muy poco para tu cita. Para cancelarla, escríbenos por WhatsApp.', false],
+    DEMASIADOS_INTENTOS: ['Hiciste muchos intentos. Espera un rato o escríbenos por WhatsApp.', false],
+    ERROR: ['No pudimos conectarnos. Revisa tu internet e intenta de nuevo.', false],
+    FALTAN_DATOS: ['Escribe el código de 6 letras y números, y tu nombre.', false],
+  };
+
+  const form = document.querySelector<HTMLFormElement>('#form-cancelar');
+  const config = configSupabase();
+  if (form && config) {
+    const codigo = form.querySelector<HTMLInputElement>('#codigo')!;
+    const cliente = form.querySelector<HTMLInputElement>('#cliente')!;
+    const boton = form.querySelector<HTMLButtonElement>('#boton')!;
+    const mensaje = form.querySelector<HTMLParagraphElement>('#mensaje')!;
+
+    // El link de la confirmación trae el código: /cancelar?codigo=A1B2C3
+    const delLink = new URLSearchParams(location.search).get('codigo') ?? '';
+    if (/^[0-9a-f]{6}$/i.test(delLink)) {
+      codigo.value = delLink.toUpperCase();
+      cliente.focus();
+    }
+
+    const mostrar = (clave: keyof typeof MENSAJES) => {
+      const [texto, exito] = MENSAJES[clave];
+      mensaje.textContent = texto;
+      mensaje.className = `rounded-xl border p-4 text-sm ${
+        exito ? 'border-wa/40 bg-wa/10' : 'border-rojo/30 bg-rojo/5 text-rojo'
+      }`;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (boton.disabled) return;
+      if (!/^[0-9a-f]{6}$/i.test(codigo.value.trim()) || cliente.value.trim().length < 2) {
+        mostrar('FALTAN_DATOS');
+        return;
+      }
+      boton.disabled = true;
+      boton.textContent = 'Cancelando…';
+      let resultado: keyof typeof MENSAJES;
+      try {
+        resultado = await cancelarReserva(config, codigo.value, cliente.value);
+      } catch {
+        resultado = 'ERROR';
+      }
+      mostrar(resultado);
+      if (resultado === 'CANCELADA') {
+        boton.hidden = true;
+        codigo.disabled = true;
+        cliente.disabled = true;
+      } else {
+        boton.disabled = false;
+        boton.textContent = 'Cancelar mi reserva';
+      }
+    });
+  }
+</script>

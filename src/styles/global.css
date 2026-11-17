@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+
+/* Identidad: fondo blanco, tarjetas en tono crema y acentos en latón. Un solo tema claro a propósito. */
+@theme {
+  --color-fondo: #ffffff;
+  --color-superficie: #ffffff;
+  --color-panel: #faf7f2;
+  --color-panel-2: #f1eadf;
+  --color-borde: #e6ddd0;
+  --color-texto: #1b1815;
+  --color-gris: #6a6157;
+  --color-laton: #9c6a2a;
+  --color-laton-claro: #b47c34;
+  --color-wa: #1f9d5c;
+  --color-wa-oscuro: #178049;
+  --color-rojo: #b4382a;
+
+  --font-display: 'Rozha One', 'Bodoni 72', Didot, Georgia, serif;
+  --font-sans: 'Figtree Variable', 'Segoe UI', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-fondo text-texto font-sans antialiased;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-laton);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  ::selection {
+    @apply bg-laton text-fondo;
+  }
+}
+
+@utility contenedor {
+  @apply mx-auto w-full max-w-5xl;
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+@utility eyebrow {
+  @apply text-laton text-xs font-bold tracking-[0.18em] uppercase;
+}
+@utility titulo-seccion {
+  @apply font-display text-3xl leading-tight sm:text-4xl;
+}
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 font-bold transition-colors duration-150 select-none;
+}
+@utility btn-principal {
+  @apply btn bg-laton text-fondo hover:bg-laton-claro;
+}
+@utility btn-secundario {
+  @apply btn border-borde text-texto hover:border-laton border;
+}
+@utility btn-wa {
+  @apply btn bg-wa hover:bg-wa-oscuro text-white;
+}
+@utility tarjeta {
+  @apply bg-panel border-borde rounded-2xl border shadow-[0_1px_2px_rgb(27_24_21/0.05)];
+}
+
+/* Franja de poste de barbero. */
+.poste {
+  height: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #9b2d38 0 12px,
+    #ffffff 12px 24px,
+    #2d4f86 24px 36px,
+    #ffffff 36px 48px
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Animaciones sin JavaScript. Todas son mejoras: si el navegador no las soporta,
+   el contenido se ve igual, completo y quieto.
+   --------------------------------------------------------------------------- */
+
+/* Transición suave entre páginas (Chrome, Edge, Safari 18+). */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
+/* Entrada escalonada de la portada al cargar. */
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+.entrada {
+  animation: entrar 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--orden, 0) * 90ms);
+}
+
+/* Foto de portada que se acerca muy despacio. */
+@keyframes acercar {
+  from {
+    transform: scale(1.08);
+  }
+}
+.foto-portada {
+  animation: acercar 6s ease-out both;
+}
+
+/* Aparecer al hacer scroll, ligado al scroll (sin JS). Solo donde el navegador lo soporta. */
+@supports (animation-timeline: view()) {
+  /* Sin opacidad a propósito: aunque el scroll no llegue (capturas, impresión, enlaces compartidos),
+     el contenido siempre se ve. Solo se desliza un poco al entrar. */
+  @keyframes revelar {
+    from {
+      transform: translateY(28px) scale(0.97);
+    }
+  }
+  .revelar {
+    animation: revelar linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+  .revelar,
+  .entrada,
+  .foto-portada {
+    animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

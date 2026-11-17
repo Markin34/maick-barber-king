@@ -1,0 +1,64 @@
+---
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Reservador from '../components/react/reservar/Reservador';
+import type { BarberoVista } from '../components/react/reservar/tipos';
+import { catalogo, serviciosDe } from '../data';
+import { configSupabase } from '../lib/config';
+import { imagen } from '../lib/imagenes';
+import { imagenWeb } from '../lib/imagenes-web';
+
+const { negocio, servicios } = catalogo;
+const supabase = configSupabase();
+
+const barberos: BarberoVista[] = await Promise.all(
+  catalogo.barberos.map(async (b) => {
+    const retrato = imagen(b.foto);
+    return {
+      ...b,
+      fotoUrl: retrato
+        ? (await getImage({ src: retrato, width: 192, height: 192, format: 'webp' })).src
+        : undefined,
+      trabajoImg: await imagenWeb(b.trabajo, [400, 640]),
+      retratoImg: await imagenWeb(b.foto, [320, 640]),
+      serviciosIds: serviciosDe(b, servicios).map((s) => s.id),
+    };
+  }),
+);
+---
+
+<Base
+  titulo="Reservar cita"
+  descripcion={`Reserva tu corte en ${negocio.nombre}: elige barbero, servicio y hora.`}
+>
+  <section class="contenedor max-w-3xl py-8 sm:py-12">
+    <!-- client:only: el reservador depende de la hora y del link del cliente, no se arma en el build. -->
+    <Reservador
+      client:only="react"
+      negocio={negocio}
+      barberos={barberos}
+      servicios={servicios}
+      supabase={supabase}
+    >
+      <div slot="fallback" class="flex flex-col gap-6" aria-busy="true">
+        <div class="grid grid-cols-4 gap-2" aria-hidden="true">
+          {[0, 1, 2, 3].map(() => (
+            <span class="bg-borde h-1 rounded-full" />
+          ))}
+        </div>
+        <p class="font-display text-3xl">¿Con quién te cortas?</p>
+        <div class="grid gap-3 sm:grid-cols-3" aria-hidden="true">
+          {barberos.map(() => (
+            <span class="bg-panel-2 h-24 animate-pulse rounded-2xl sm:h-56" />
+          ))}
+        </div>
+      </div>
+    </Reservador>
+    <noscript>
+      <p class="tarjeta mt-6 p-5">
+        Para reservar necesitas activar JavaScript, o escríbenos directo por WhatsApp al{' '}
+        {negocio.whatsapp}.
+      </p>
+    </noscript>
+  </section>
+</Base>

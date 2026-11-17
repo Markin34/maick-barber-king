@@ -1,0 +1,362 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Avatar from '../components/Avatar.astro';
+import HorarioSemanal from '../components/HorarioSemanal.astro';
+import { catalogo } from '../data';
+import { duracion, formatoBs } from '../lib/formato';
+import { imagen } from '../lib/imagenes';
+
+const { negocio, barberos, servicios, productos } = catalogo;
+const destacados = productos.filter((p) => p.disponible).slice(0, 4);
+const fotoPortada = imagen(negocio.fotos.portada);
+const fotoLocal = imagen(negocio.fotos.local);
+const galeria = negocio.fotos.galeria.map((g) => ({ ...g, meta: imagen(g.ruta)! }));
+const pasos = [
+  { titulo: 'Elige barbero y servicio', texto: 'Mira quién te corta y cuánto cuesta.' },
+  { titulo: 'Escoge día y hora', texto: 'Las horas ocupadas salen tachadas.' },
+  { titulo: 'Confirma tu reserva', texto: 'Tu hora queda guardada al instante.' },
+  {
+    titulo: 'Envíala por WhatsApp',
+    texto: 'Toca «Enviar por WhatsApp» para avisar a tu barbero. Pagas en el local.',
+  },
+];
+---
+
+<Base>
+  <!-- Portada: foto del local de fondo, oscurecida para que el texto se lea. -->
+  <section class="relative isolate overflow-hidden bg-black" data-portada>
+    {fotoPortada && (
+      <Image
+        src={fotoPortada}
+        widths={[828, 1200, 1600]}
+        sizes="100vw"
+        quality={90}
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+        class="foto-portada absolute inset-0 -z-10 size-full object-cover"
+      />
+    )}
+    <div
+      class="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/60 to-black/40 md:bg-gradient-to-r md:from-black/90 md:via-black/65 md:to-black/25"
+      aria-hidden="true"
+    >
+    </div>
+    <div class="contenedor flex min-h-[min(82svh,640px)] items-end pt-24 pb-10 text-white sm:pb-14 md:items-center md:py-16">
+      <div class="flex flex-col gap-5 sm:gap-6">
+        <p class="eyebrow entrada !text-laton-claro" style="--orden:0">
+          Barbería · {negocio.ciudad}
+        </p>
+        <h1
+          class="font-display entrada max-w-[12ch] text-5xl leading-[1.02] sm:text-7xl"
+          style="--orden:1"
+        >
+          {negocio.nombre}
+        </h1>
+        <div class="entrada flex flex-col gap-3" style="--orden:2">
+          <p class="text-laton-claro text-base font-medium italic sm:text-lg">
+            “{negocio.eslogan}”
+          </p>
+          <p class="max-w-[36ch] text-lg text-white/85">
+            Reserva en un minuto. Elige barbero, servicio y hora desde tu celular.
+          </p>
+        </div>
+        <div class="entrada flex flex-wrap gap-3" style="--orden:3">
+          <a href="/reservar" class="btn-principal">
+            Reservar cita
+          </a>
+          <a href="/tienda" class="btn border border-white/40 text-white hover:border-white">
+            Ver productos
+          </a>
+        </div>
+        <p class="entrada text-sm text-white/70" style="--orden:4">
+          {negocio.formaDePago}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section class="contenedor py-12" aria-label="Cómo reservar">
+    <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {pasos.map((p, i) => (
+        <li class="revelar flex gap-4">
+          <span class="border-laton text-laton font-display grid size-10 shrink-0 place-items-center rounded-full border text-lg">
+            {i + 1}
+          </span>
+          <span>
+            <b class="block">{p.titulo}</b>
+            <span class="text-gris text-sm">{p.texto}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- Barberos -->
+  <section id="barberos" class="contenedor scroll-mt-20 py-12">
+    <p class="eyebrow">El equipo</p>
+    <h2 class="titulo-seccion mt-2 mb-8">Elige a tu barbero</h2>
+    <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {barberos.map((b) => {
+        const trabajo = imagen(b.trabajo);
+        const retrato = imagen(b.foto);
+        // Con retrato y sin foto de trabajo: el retrato ocupa todo el ancho de arriba de la tarjeta.
+        if (!trabajo && retrato) {
+          return (
+            <li class="revelar tarjeta group flex flex-col overflow-hidden">
+              <div class="bg-panel-2 relative aspect-square overflow-hidden">
+                <Image
+                  src={retrato}
+                  widths={[400, 640, 800]}
+                  sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+                  alt={`Foto de ${b.nombre}`}
+                  class="size-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+                <p class="absolute bottom-3 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-black">
+                  {b.especialidad}
+                </p>
+              </div>
+              <div class="flex flex-1 flex-col gap-4 p-5">
+                <div>
+                  <h3 class="font-display text-2xl leading-tight">{b.apodo}</h3>
+                  <p class="text-gris text-sm">{b.nombre}</p>
+                </div>
+                <a href={`/reservar?barbero=${b.id}`} class="btn-principal mt-auto w-full">
+                  Reservar con {b.apodo}
+                </a>
+              </div>
+            </li>
+          );
+        }
+        // Sin fotos: tarjeta centrada con las iniciales grandes.
+        if (!trabajo) {
+          return (
+            <li class="revelar tarjeta flex flex-col items-center gap-4 p-6 text-center">
+              <Avatar nombre={b.nombre} foto={b.foto} tamano={96} />
+              <div>
+                <h3 class="font-display text-2xl leading-tight">{b.apodo}</h3>
+                <p class="text-gris text-sm">{b.nombre}</p>
+              </div>
+              <p class="bg-panel-2 rounded-full px-3 py-1 text-sm">{b.especialidad}</p>
+              <a href={`/reservar?barbero=${b.id}`} class="btn-principal w-full">
+                Reservar con {b.apodo}
+              </a>
+            </li>
+          );
+        }
+        return (
+          <li class="revelar tarjeta group flex flex-col overflow-hidden">
+            <div class="bg-panel-2 relative aspect-[4/3] overflow-hidden">
+              {trabajo && (
+                <Image
+                  src={trabajo}
+                  widths={[400, 800]}
+                  sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
+                  alt={`Trabajo de ${b.apodo}`}
+                  class="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              )}
+              <div
+                class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent"
+                aria-hidden="true"
+              />
+              <p class="absolute bottom-3 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold">
+                {b.especialidad}
+              </p>
+            </div>
+            <div class="flex items-center gap-4 p-5">
+              <Avatar
+                nombre={b.nombre}
+                foto={b.foto}
+                tamano={56}
+                class="-mt-12 ring-4 ring-[var(--color-panel)]"
+              />
+              <div class="min-w-0">
+                <h3 class="font-display text-2xl leading-tight">{b.apodo}</h3>
+                <p class="text-gris text-sm">{b.nombre}</p>
+              </div>
+            </div>
+            <a href={`/reservar?barbero=${b.id}`} class="btn-principal mx-5 mb-5">
+              Reservar con {b.apodo}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+
+  <!-- Galería -->
+  {galeria.length > 0 && (
+    <section class="py-12" aria-labelledby="titulo-galeria">
+      <div class="contenedor">
+        <p class="eyebrow">Nuestro trabajo</p>
+        <h2 id="titulo-galeria" class="titulo-seccion mt-2 mb-8">
+          Cortes de la casa
+        </h2>
+      </div>
+      <!-- 5 fotos: en celular y tablet la primera va a todo el ancho y las otras 4 de a 2;
+           en computadora, las 5 en una fila. -->
+      <ul class="contenedor grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {galeria.map((g, i) => (
+          <li
+            class:list={[
+              'revelar group relative overflow-hidden rounded-2xl lg:col-span-1 lg:aspect-[3/4]',
+              i === 0 ? 'col-span-2 aspect-[16/10]' : 'aspect-[3/4]',
+            ]}
+          >
+            <Image
+              src={g.meta}
+              widths={[360, 720, 1080]}
+              sizes={i === 0 ? '(min-width: 1024px) 20vw, 100vw' : '(min-width: 1024px) 20vw, 50vw'}
+              alt={g.texto}
+              class="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-10 text-sm font-semibold text-white">
+              {g.texto}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <!-- Servicios: tablero de precios -->
+  <section id="servicios" class="contenedor scroll-mt-20 py-12">
+    <p class="eyebrow">Servicios</p>
+    <h2 class="titulo-seccion mt-2 mb-8">Precios</h2>
+    <ul class="revelar tarjeta divide-borde divide-y px-5 sm:px-8">
+      {servicios.map((s) => (
+        <li class="flex items-baseline gap-3 py-4">
+          <div class="min-w-0">
+            <h3 class="font-semibold">{s.nombre}</h3>
+            <p class="text-gris text-sm">
+              {s.descripcion} · {duracion(s.duracionMin)}
+            </p>
+          </div>
+          <span
+            class="border-borde mb-1 flex-1 self-end border-b border-dotted"
+            aria-hidden="true"
+          />
+          <span class="font-display text-laton shrink-0 text-xl tabular-nums">
+            {formatoBs(s.precio)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- Productos destacados -->
+  {destacados.length > 0 && (
+    <section class="contenedor py-12">
+      <div class="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Tienda</p>
+          <h2 class="titulo-seccion mt-2">Para tu casa</h2>
+        </div>
+        <a href="/tienda" class="text-laton shrink-0 text-sm font-semibold hover:underline">
+          Ver todo →
+        </a>
+      </div>
+      <ul class="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-4 sm:gap-x-5">
+        {destacados.map((p) => {
+          const foto = imagen(p.imagen);
+          return (
+            <li class="revelar group">
+              <a href="/tienda" class="flex flex-col gap-1">
+                <span class="bg-panel-2 relative block aspect-[4/5] overflow-hidden rounded-2xl">
+                  {foto ? (
+                    <Image
+                      src={foto}
+                      widths={[320, 640]}
+                      sizes="(min-width: 640px) 25vw, 50vw"
+                      alt={p.nombre}
+                      class="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <span
+                      class="font-display text-laton/30 grid size-full place-items-center text-6xl"
+                      aria-hidden="true"
+                    >
+                      {p.nombre.charAt(0)}
+                    </span>
+                  )}
+                </span>
+                <span class="mt-2 font-semibold">{p.nombre}</span>
+                {p.precio === undefined ? (
+                  <span class="text-gris text-sm font-semibold">Precio a consultar</span>
+                ) : (
+                  <span class="font-display text-laton text-lg">{formatoBs(p.precio)}</span>
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  )}
+
+  <!-- Ubicación y horario -->
+  <section id="ubicacion" class="contenedor scroll-mt-20 py-12">
+    <div class="grid gap-8 md:grid-cols-2 md:items-start">
+      <div class="flex flex-col gap-4">
+        <p class="eyebrow">Dónde estamos</p>
+        <h2 class="titulo-seccion">{negocio.direccion}</h2>
+        <p class="text-gris">{negocio.ciudad}</p>
+        <div class="flex flex-wrap gap-3">
+          <a
+            href={negocio.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-secundario"
+          >
+            Abrir en Google Maps
+          </a>
+        </div>
+        {fotoLocal && (
+          <Image
+            src={fotoLocal}
+            widths={[480, 960]}
+            sizes="(min-width: 768px) 50vw, 100vw"
+            alt={`Local de ${negocio.nombre}`}
+            class="revelar mt-2 aspect-[16/10] w-full rounded-2xl object-cover"
+          />
+        )}
+      </div>
+      <div class="revelar tarjeta p-5 sm:p-6">
+        <h3 class="mb-2 font-semibold">Horario de atención</h3>
+        <HorarioSemanal />
+      </div>
+    </div>
+  </section>
+
+  <!-- Botón fijo en celular -->
+  <div
+    data-barra-reservar
+    class="border-borde bg-fondo/95 fixed inset-x-0 bottom-0 z-20 border-t p-3 backdrop-blur transition-transform duration-300 sm:hidden"
+    style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px))"
+  >
+    <a href="/reservar" class="btn-principal w-full">
+      Reservar cita
+    </a>
+  </div>
+  <div class="h-20 sm:hidden" aria-hidden="true"></div>
+
+  <script is:inline>
+    // Sin JS el botón queda siempre visible. Con JS se esconde mientras se ve la portada,
+    // que ya tiene su propio "Reservar cita": así no tapa el final de la portada.
+    (() => {
+      const barra = document.querySelector('[data-barra-reservar]');
+      const portada = document.querySelector('[data-portada]');
+      if (!barra || !portada || !('IntersectionObserver' in window)) return;
+      new IntersectionObserver(
+        ([e]) => {
+          barra.style.transform = e.isIntersecting ? 'translateY(110%)' : '';
+          barra.inert = e.isIntersecting;
+        },
+        { threshold: 0.15 },
+      ).observe(portada);
+    })();
+  </script>
+</Base>

@@ -1,0 +1,54 @@
+{
+  "name": "maick-barber-king",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Página de reservas por WhatsApp y tienda de Maick Barber King",
+  "engines": {
+    "node": ">=20.3.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "vitest run && astro check && astro build",
+    "respaldo": "node --env-file-if-exists=.env scripts/respaldo.mjs",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "catalogo": "vitest run tests/unit/catalogo.test.ts -u",
+    "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "verificar": "npm run lint && npm run build"
+  },
+  "dependencies": {
+    "@astrojs/react": "^7.1.8",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource/rozha-one": "^5.3.0",
+    "@supabase/supabase-js": "^2.119.0",
+    "astro": "^7.4.11",
+    "motion": "^14.13.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@electric-sql/pglite": "^0.5.16",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.10.1",
+    "prettier-plugin-astro": "^1.1.2",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

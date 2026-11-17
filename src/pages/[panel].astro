@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import PanelAdmin from '../components/react/admin/PanelAdmin';
+import { catalogo, serviciosDe } from '../data';
+import { DIAS } from '../data/dias';
+import { configSupabase } from '../lib/config';
+import { RUTA_PANEL } from '../lib/panel';
+
+// Una sola página, en la dirección secreta de PANEL_RUTA (ver src/lib/panel.ts).
+export function getStaticPaths() {
+  return [{ params: { panel: RUTA_PANEL.slice(1) } }];
+}
+
+const { negocio, barberos, servicios } = catalogo;
+const precios = Object.fromEntries(servicios.map((s) => [s.nombre, s.precio]));
+const serviciosPanel = servicios.map((s) => ({
+  nombre: s.nombre,
+  precio: s.precio,
+  duracionMin: s.duracionMin,
+}));
+const barberosPanel = barberos.map((b) => ({
+  id: b.id,
+  apodo: b.apodo,
+  // Solo si tiene un número propio: si es el de la barbería, el aviso le llegaría al mismo dueño.
+  whatsapp: b.whatsapp === negocio.whatsapp ? '' : b.whatsapp,
+  servicios: serviciosDe(b, servicios).map((s) => s.nombre),
+  // Días (0 = domingo) en que no trabaja: su día libre, o cuando la barbería cierra.
+  diasLibres: DIAS.flatMap((dia, i) => {
+    const propio = b.horario?.[dia];
+    return (propio === undefined ? negocio.horario[dia] : propio) === null ? [i] : [];
+  }),
+}));
+---
+
+<Base titulo="Panel" descripcion={`Panel de administración de ${negocio.nombre}.`} noIndex app>
+  <section class="contenedor py-6 sm:py-10">
+    <PanelAdmin
+      client:only="react"
+      supabase={configSupabase()}
+      negocio={negocio.nombre}
+      zona={negocio.zonaHoraria}
+      barberos={barberosPanel}
+      servicios={serviciosPanel}
+      precios={precios}
+    >
+      <p slot="fallback" class="text-gris py-20 text-center">
+        Cargando panel…
+      </p>
+    </PanelAdmin>
+  </section>
+</Base>

@@ -1,0 +1,23 @@
+# Dependencias y archivos generados
+node_modules/
+dist/
+dist-e2e/
+.astro/
+playwright-report/
+test-results/
+
+# Vercel (vínculo del proyecto)
+.vercel/
+
+# Claves: nunca al repositorio (solo el ejemplo)
+.env
+.env.*
+!.env.example
+
+# Datos privados del cliente
+respaldos/
+docs/
+
+# Configuración local
+.claude/
+.DS_Store

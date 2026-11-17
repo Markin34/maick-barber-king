@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import Tienda from '../components/react/tienda/Tienda';
+import type { ProductoVista } from '../components/react/tienda/tipos';
+import { catalogo } from '../data';
+import { imagenWeb } from '../lib/imagenes-web';
+
+const { negocio } = catalogo;
+
+const productos: ProductoVista[] = await Promise.all(
+  catalogo.productos.map(async (p) => ({
+    id: p.id,
+    nombre: p.nombre,
+    descripcion: p.descripcion,
+    categoria: p.categoria,
+    precio: p.precio,
+    disponible: p.disponible,
+    imagen: await imagenWeb(p.imagen, [320, 480, 720]),
+  })),
+);
+---
+
+<Base
+  titulo="Tienda"
+  descripcion={`Productos para cabello y barba de ${negocio.nombre}. Pide por WhatsApp y recoge en la barbería.`}
+>
+  <section class="contenedor py-8 sm:py-12">
+    <p class="eyebrow entrada">Catálogo</p>
+    <h1 class="titulo-seccion entrada mt-2" style="--orden:1">
+      Nuestros productos
+    </h1>
+    <p class="text-gris entrada mt-2 mb-10 max-w-[52ch]" style="--orden:2">
+      Arma tu pedido y envíalo por WhatsApp. Lo tenemos listo para que lo recojas en la barbería.{' '}
+      {negocio.formaDePago}
+    </p>
+    <Tienda
+      client:load
+      negocio={{
+        nombre: negocio.nombre,
+        whatsapp: negocio.whatsapp,
+        formaDePago: negocio.formaDePago,
+      }}
+      productos={productos}
+    />
+  </section>
+</Base>

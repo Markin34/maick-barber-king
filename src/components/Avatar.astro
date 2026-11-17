@@ -1,0 +1,36 @@
+---
+import { Image } from 'astro:assets';
+import { imagen, iniciales } from '../lib/imagenes';
+
+interface Props {
+  nombre: string;
+  foto?: string;
+  tamano?: number;
+  class?: string;
+}
+
+const { nombre, foto, tamano = 96, class: clase = '' } = Astro.props;
+const meta = imagen(foto);
+---
+
+{meta ? (
+  <Image
+    src={meta}
+    alt={`Foto de ${nombre}`}
+    width={tamano}
+    height={tamano}
+    densities={[1, 2]}
+    class:list={['rounded-full object-cover', clase]}
+  />
+) : (
+  <span
+    class:list={[
+      'font-display grid text-white shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#a06a32] to-[#3d2a17]',
+      clase,
+    ]}
+    style={`width:${tamano}px;height:${tamano}px;font-size:${Math.round(tamano / 2.6)}px`}
+    aria-hidden="true"
+  >
+    {iniciales(nombre)}
+  </span>
+)}
