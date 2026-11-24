@@ -16,7 +16,7 @@ export const servicios = [
     nombre: 'Corte + ceja',
     descripcion: 'Corte completo y perfilado de cejas.',
     precio: 50,
-    duracionMin: 40,
+    duracionMin: 45,
   },
   {
     id: 'corte-barba',

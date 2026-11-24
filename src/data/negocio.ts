@@ -17,13 +17,13 @@ export const negocio = {
   // Redes: sin link no aparecen en el pie. Ej.: instagram: 'https://www.instagram.com/maickbarberking/',
   zonaHoraria: 'America/La_Paz',
   horario: {
-    // 8:30–12:00 y 14:00–20:30, con almuerzo de 12:00 a 14:00.
-    lunes: { abre: '08:30', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
-    martes: { abre: '08:30', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
-    miercoles: { abre: '08:30', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
-    jueves: { abre: '08:30', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
-    viernes: { abre: '08:30', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
-    sabado: { abre: '08:30', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
+    // 9:00–12:00 y 14:00–20:30, con almuerzo de 12:00 a 14:00.
+    lunes: { abre: '09:00', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
+    martes: { abre: '09:00', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
+    miercoles: { abre: '09:00', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
+    jueves: { abre: '09:00', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
+    viernes: { abre: '09:00', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
+    sabado: { abre: '09:00', cierra: '20:30', descanso: { desde: '12:00', hasta: '14:00' } },
     domingo: null,
   },
   // Cada cuántos minutos se ofrece una hora. La reserva ocupa lo que dura el servicio.

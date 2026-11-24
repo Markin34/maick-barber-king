@@ -119,17 +119,17 @@ describe('crear_reserva valida contra el catálogo', () => {
     // Almuerzo de 12:00 a 14:00.
     expect(await errorDe(reservar({ hora: '12:30' }))).toBe('FUERA_DE_HORARIO');
     expect(await errorDe(reservar({ hora: '11:45' }))).toBe('FUERA_DE_HORARIO');
-    await expect(reservar({ hora: '08:30' })).resolves.toBeDefined();
+    await expect(reservar({ hora: '09:00' })).resolves.toBeDefined();
     await expect(reservar({ hora: '14:00' })).resolves.toBeDefined();
     expect(await errorDe(reservar({ hora: '03:00' }))).toBe('FUERA_DE_HORARIO');
     expect(await errorDe(reservar({ hora: '20:15' }))).toBe('FUERA_DE_HORARIO');
     expect(await errorDe(reservar({ hora: '11:10' }))).toBe('FUERA_DE_HORARIO');
     expect(await errorDe(reservar({ hora: '11:00:30' }))).toBe('FUERA_DE_HORARIO');
     expect(await errorDe(reservar({ fecha: DOMINGO, hora: '11:00' }))).toBe('FUERA_DE_HORARIO');
-    // Víctor no trabaja los lunes, Micki sí.
-    expect(await errorDe(reservar({ fecha: LUNES, hora: '11:00', barbero: 'victor' }))).toBe(
-      'FUERA_DE_HORARIO',
-    );
+    // Abre a las 9:00: las 8:30 ya no.
+    expect(await errorDe(reservar({ hora: '08:30' }))).toBe('FUERA_DE_HORARIO');
+    // Todos trabajan todos los días (las ausencias son bloqueos del admin).
+    await expect(reservar({ fecha: LUNES, hora: '11:00', barbero: 'victor' })).resolves.toBeDefined();
     await expect(reservar({ fecha: LUNES, hora: '11:00', barbero: 'micki' })).resolves.toBeDefined();
   });
 
