@@ -93,6 +93,8 @@ export interface DatosAdmin {
   recientes: ReadonlySet<string>;
   recargar: () => void;
   cambiarEstado: (id: string, estado: EstadoReserva) => Promise<void>;
+  /** Borra la cita por completo (también sale de la lista negra). */
+  eliminarCita: (id: string) => Promise<void>;
   crearBloqueo: (b: NuevoBloqueo) => Promise<void>;
   borrarBloqueo: (id: string) => Promise<void>;
   registrarCorte: (c: NuevoCorte) => Promise<void>;
@@ -192,6 +194,17 @@ export function useDatosAdmin(supabase: SupabaseClient, zona: string): DatosAdmi
     [supabase],
   );
 
+  const eliminarCita = useCallback(
+    async (id: string) => {
+      // Se pide la fila borrada de vuelta: si la base no dejó borrar (sin permiso),
+      // no hay error pero vuelve vacía, y así no se finge un borrado que no pasó.
+      const { data, error } = await supabase.from('reservas').delete().eq('id', id).select('id');
+      if (error || !data?.length) throw new Error('No se pudo eliminar la cita. Revisa tu internet.');
+      setFilas((actual) => actual.filter((f) => f.id !== id));
+    },
+    [supabase],
+  );
+
   const crearBloqueo = useCallback(
     async (b: NuevoBloqueo) => {
       const { data, error } = await supabase
@@ -261,11 +274,13 @@ export function useDatosAdmin(supabase: SupabaseClient, zona: string): DatosAdmi
       recientes,
       recargar,
       cambiarEstado,
+      eliminarCita,
       crearBloqueo,
       borrarBloqueo,
       registrarCorte,
     }),
     [
+      eliminarCita,
       registrarCorte,
       estado,
       citas,

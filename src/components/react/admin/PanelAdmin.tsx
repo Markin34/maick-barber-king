@@ -72,6 +72,11 @@ function Tablero({ cliente, ...p }: Props & { cliente: SupabaseClient }) {
         await datos.cambiarEstado(id, estado);
         if (estado === 'cancelada' || antes === 'cancelada') recargarLista();
       },
+      // Si la cita estaba en la lista negra, la base la saca sola al borrarla.
+      eliminarCita: async (id: string) => {
+        await datos.eliminarCita(id);
+        recargarLista();
+      },
     }),
     [datos, recargarLista],
   );

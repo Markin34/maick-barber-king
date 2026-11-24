@@ -14,6 +14,9 @@ const COLOR_ESTADO: Record<EstadoReserva, string> = {
   cancelada: 'bg-borde text-gris line-through',
 };
 
+/** Lo que hay que escribir para eliminar una cita (sin importar mayúsculas). */
+const PALABRA_ELIMINAR = 'ELIMINAR';
+
 interface Props {
   cita: Cita;
   mostrarFecha?: boolean;
@@ -27,6 +30,10 @@ export const TarjetaCita = memo(function TarjetaCita({
 }: Props) {
   const { barberos, precioDe, apodoDe, datos, listaNegra, avisar } = usePanel();
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const [textoEliminar, setTextoEliminar] = useState('');
+  const [borrando, setBorrando] = useState(false);
+  const puedeEliminar = textoEliminar.trim().toUpperCase() === PALABRA_ELIMINAR;
   const barbero = barberos.find((b) => b.id === cita.barbero);
   const inactiva = cita.estado === 'cancelada';
   const vecesEnLista = inactiva ? 0 : (listaNegra.veces.get(nombreClave(cita.cliente)) ?? 0);
@@ -34,6 +41,23 @@ export const TarjetaCita = memo(function TarjetaCita({
   const cambiar = (estado: EstadoReserva) => {
     setConfirmarCancelacion(false);
     datos.cambiarEstado(cita.id, estado).catch((e: Error) => avisar(e.message));
+  };
+
+  const cerrarEliminar = () => {
+    setEliminando(false);
+    setTextoEliminar('');
+  };
+
+  const eliminar = () => {
+    if (!puedeEliminar || borrando) return;
+    setBorrando(true);
+    datos
+      .eliminarCita(cita.id)
+      .then(() => avisar(`🗑 Cita de ${cita.cliente} eliminada`))
+      .catch((e: Error) => {
+        setBorrando(false);
+        avisar(e.message);
+      });
   };
 
   const aviso =
@@ -156,7 +180,66 @@ export const TarjetaCita = memo(function TarjetaCita({
             Avisar a {barbero?.apodo}
           </a>
         )}
+        {!eliminando && (
+          <m.button
+            whileTap={TOQUE}
+            type="button"
+            className="btn border-borde text-gris min-h-10 border px-3 text-sm"
+            onClick={() => {
+              setConfirmarCancelacion(false);
+              setEliminando(true);
+            }}
+          >
+            🗑 Eliminar
+          </m.button>
+        )}
       </div>
+
+      <AnimatePresence initial={false}>
+        {eliminando && (
+          <m.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-rojo/30 bg-rojo/5 flex flex-col gap-2 overflow-hidden rounded-xl border p-3 text-sm"
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              eliminar();
+            }}
+          >
+            <label htmlFor={`eliminar-${cita.id}`} className="text-rojo">
+              Esto borra la cita para siempre (no queda en la agenda ni en el resumen). Escribe{' '}
+              <b>{PALABRA_ELIMINAR}</b> para confirmar.
+            </label>
+            <input
+              id={`eliminar-${cita.id}`}
+              className="bg-panel border-borde focus:border-rojo min-h-11 rounded-xl border px-4 text-base tracking-wider uppercase outline-none"
+              value={textoEliminar}
+              onChange={(ev) => setTextoEliminar(ev.target.value)}
+              placeholder={PALABRA_ELIMINAR}
+              autoComplete="off"
+              autoCapitalize="characters"
+              autoFocus
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="submit"
+                disabled={!puedeEliminar || borrando}
+                className="btn bg-rojo min-h-10 px-3 text-sm text-white disabled:opacity-40"
+              >
+                {borrando ? 'Eliminando…' : 'Eliminar cita'}
+              </button>
+              <button
+                type="button"
+                className="btn-secundario min-h-10 px-3 text-sm"
+                onClick={cerrarEliminar}
+              >
+                No, volver
+              </button>
+            </div>
+          </m.form>
+        )}
+      </AnimatePresence>
     </m.li>
   );
 });

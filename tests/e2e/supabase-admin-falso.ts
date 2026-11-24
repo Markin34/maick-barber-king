@@ -170,6 +170,12 @@ export async function simularAdmin(
       }
       return route.fulfill({ status: 204, headers: CORS });
     }
+    if (ruta === '/rest/v1/reservas' && req.method() === 'DELETE') {
+      // Igual que la base: devuelve la fila borrada y su lista negra se va con ella.
+      const id = url.searchParams.get('id')?.replace(/^eq\./, '');
+      lista = lista.filter((f) => f.reserva_id !== id);
+      return responder(route, 200, [{ id }]);
+    }
     if (ruta === '/rest/v1/lista_negra') {
       const id = url.searchParams.get('id')?.replace(/^eq\./, '');
       if (req.method() === 'PATCH') {

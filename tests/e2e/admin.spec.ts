@@ -78,6 +78,40 @@ test('cancelar pide confirmación con un segundo toque', async ({ page }) => {
   await expect(deMicki.getByText('Cancelada', { exact: true })).toBeVisible();
 });
 
+test('eliminar una cita pide escribir ELIMINAR y la borra por completo', async ({ page }) => {
+  const supabase = await simularAdmin(page);
+  await entrar(page);
+  const deMicki = page.getByRole('region', { name: 'Citas de Micki' });
+  const eliminarBoton = deMicki.getByRole('button', { name: '🗑 Eliminar' }).first();
+  await expect(eliminarBoton).toBeVisible();
+  const antes = await deMicki.getByRole('listitem').count();
+
+  await eliminarBoton.click();
+  const confirmar = deMicki.getByRole('button', { name: 'Eliminar cita' });
+  await expect(confirmar).toBeDisabled();
+
+  // Otra palabra no sirve; "eliminar" en minúsculas sí.
+  const campo = deMicki.getByLabel(/Escribe ELIMINAR para confirmar/);
+  await campo.fill('borrar');
+  await expect(confirmar).toBeDisabled();
+  await campo.fill('eliminar');
+  await confirmar.click();
+
+  await expect(page.getByText(/eliminada/)).toBeVisible();
+  await expect(deMicki.getByRole('listitem')).toHaveCount(antes - 1);
+  expect(supabase.cambios.filter((c) => c.metodo === 'DELETE')).toHaveLength(1);
+});
+
+test('"No, volver" cierra la confirmación sin borrar nada', async ({ page }) => {
+  const supabase = await simularAdmin(page);
+  await entrar(page);
+  const deMicki = page.getByRole('region', { name: 'Citas de Micki' });
+  await deMicki.getByRole('button', { name: '🗑 Eliminar' }).first().click();
+  await deMicki.getByRole('button', { name: 'No, volver' }).click();
+  await expect(deMicki.getByRole('button', { name: 'Eliminar cita' })).toHaveCount(0);
+  expect(supabase.cambios.filter((c) => c.metodo === 'DELETE')).toHaveLength(0);
+});
+
 test('busca una cita por nombre sin tildes', async ({ page }) => {
   await simularAdmin(page);
   await entrar(page);
