@@ -17,7 +17,7 @@ delete from public.catalogo_servicios;
 insert into public.catalogo_reglas
   (id, zona, intervalo_min, ultima_antes_cierre, dias_anticipacion, minutos_minimos)
 values
-  (true, 'America/La_Paz', 15, 30, 14, 30)
+  (true, 'America/La_Paz', 15, 30, 14, 15)
 on conflict (id) do update set
   zona = excluded.zona,
   intervalo_min = excluded.intervalo_min,

@@ -31,7 +31,7 @@ export const negocio = {
   // Cierra 20:30 → la última reserva es a las 20:00.
   ultimaReservaAntesDelCierre: 30,
   diasAnticipacion: 14,
-  minutosMinimos: 30,
+  minutosMinimos: 15,
   formaDePago: 'Pagas en la barbería, en efectivo o QR.',
   // Fotos reales de la barbería, salvo "Perfilado de barba" (Unsplash). Ver src/assets/fotos/CREDITOS.md.
   fotos: {
