@@ -51,6 +51,29 @@ describe('whatsapp', () => {
     expect(msg).toContain('📝 Llego con mi hijo');
   });
 
+  it('con reserva guardada, incluye el código y el link para cancelar', () => {
+    const base = {
+      negocio: 'Maick Barber King',
+      barbero: 'Micki',
+      servicio: 'Corte normal',
+      precio: 40,
+      duracionMin: 30,
+      fecha: '2026-12-07',
+      hora: '20:00',
+      cliente: 'Carlos',
+      formaDePago: 'Pagas en la barbería, en efectivo.',
+    };
+    const msg = mensajeReserva({
+      ...base,
+      codigo: '3B2530',
+      enlaceCancelar: 'https://ejemplo.com/cancelar?codigo=3B2530',
+    });
+    expect(msg).toContain('🔖 Reserva 3B2530');
+    expect(msg).toContain('❌ Para cancelar: https://ejemplo.com/cancelar?codigo=3B2530');
+    // Sin reserva guardada no hay nada que cancelar.
+    expect(mensajeReserva({ ...base, enlaceCancelar: 'https://x' })).not.toContain('cancelar');
+  });
+
   it('arma el mensaje de pedido con el total', () => {
     const msg = mensajePedido({
       negocio: 'Maick Barber King',

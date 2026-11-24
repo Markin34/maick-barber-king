@@ -150,6 +150,9 @@ function ReservadorInterno({ negocio, barberos, servicios, supabase }: Props) {
             nota: e.nota,
             formaDePago: negocio.formaDePago,
             codigo,
+            enlaceCancelar: codigo
+              ? `${window.location.origin}/cancelar?codigo=${encodeURIComponent(codigo)}`
+              : undefined,
           })
         : '',
     [barbero, servicio, negocio, e.cliente, e.nota],

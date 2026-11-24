@@ -39,7 +39,13 @@ test('un cliente reserva, se guarda en la base de datos y avisa por WhatsApp', a
   await page.getByRole('button', { name: 'Confirmar reserva' }).click();
 
   await expect(page.getByRole('heading', { name: '¡Reserva confirmada!' })).toBeVisible();
-  await expect(page.getByText('ABC123')).toBeVisible();
+  await expect(page.getByRole('definition').filter({ hasText: 'ABC123' })).toBeVisible();
+
+  // Explica cómo cancelar, con el código y el link ya listo.
+  await expect(page.getByText('¿No puedes ir? Cancela tu reserva')).toBeVisible();
+  expect(
+    await page.getByRole('link', { name: 'Cancelar una reserva' }).first().getAttribute('href'),
+  ).toBe('/cancelar?codigo=ABC123');
 
   const guardada = supabase.llamadas.find((l) => l.funcion === 'crear_reserva')!.cuerpo;
   expect(guardada).toMatchObject({
@@ -57,7 +63,7 @@ test('un cliente reserva, se guarda en la base de datos y avisa por WhatsApp', a
   expect(texto).toContain('Hola Apu, reservé en Maick Barber King:');
   expect(texto).toContain('Corte + barba · Bs 60 · 45 min');
   expect(texto).toContain('🔖 Reserva ABC123');
-});
+  expect(texto).toMatch(/❌ Para cancelar: http:\/\/localhost:\d+\/cancelar\?codigo=ABC123/);});
 
 test('si alguien ganó la hora, vuelve a elegir con los horarios actualizados', async ({ page }) => {
   const supabase = await simularSupabase(page, {

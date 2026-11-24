@@ -53,16 +53,30 @@ export function PasoConfirmado(p: Props) {
         <IconoWhatsApp />
         Enviar por WhatsApp a {p.apodo}
       </m.a>
-      <p className="text-gris text-center text-xs">
-        {p.formaDePago} ¿No puedes ir?{' '}
-        <a
-          href={`/cancelar?codigo=${encodeURIComponent(p.codigo)}`}
-          className="text-texto font-semibold underline"
-        >
-          Cancela tu reserva
-        </a>{' '}
-        para liberar la hora.
-      </p>
+      <p className="text-gris text-center text-xs">{p.formaDePago}</p>
+      <div className="tarjeta flex flex-col gap-2 p-4 text-sm">
+        <b>¿No puedes ir? Cancela tu reserva</b>
+        <ol className="text-gris list-decimal space-y-1 pl-5">
+          <li>
+            Entra a{' '}
+            <a
+              href={`/cancelar?codigo=${encodeURIComponent(p.codigo)}`}
+              className="text-texto font-semibold underline"
+            >
+              Cancelar una reserva
+            </a>{' '}
+            (también está al final de la página).
+          </li>
+          <li>
+            Escribe tu código <b className="text-texto tabular-nums">{p.codigo}</b> y tu nombre tal
+            como lo pusiste.
+          </li>
+          <li>Hazlo hasta 1 hora antes. Si falta menos, escríbele a {p.apodo} por WhatsApp.</li>
+        </ol>
+        <p className="text-gris text-xs">
+          El link para cancelar también va en el mensaje de WhatsApp, así lo tienes guardado.
+        </p>
+      </div>
       <button type="button" className="btn-secundario" onClick={p.onOtra}>
         Hacer otra reserva
       </button>

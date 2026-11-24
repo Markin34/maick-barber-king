@@ -27,6 +27,8 @@ export interface DatosReserva {
   formaDePago: string;
   /** Código de la reserva guardada en la base de datos. Si falta, se pide confirmación. */
   codigo?: string;
+  /** Link a /cancelar con el código: así el cliente lo tiene guardado en su chat. */
+  enlaceCancelar?: string;
 }
 
 export function mensajeReserva(r: DatosReserva): string {
@@ -43,6 +45,7 @@ export function mensajeReserva(r: DatosReserva): string {
   ];
   if (nota) lineas.push(`📝 ${nota}`);
   if (r.codigo) lineas.push(`🔖 Reserva ${r.codigo}`);
+  if (r.codigo && r.enlaceCancelar) lineas.push(`❌ Para cancelar: ${r.enlaceCancelar}`);
   lineas.push(
     '',
     r.codigo ? `${r.formaDePago} ¡Nos vemos!` : `${r.formaDePago} ¿Me confirmas la hora?`,
